@@ -16,6 +16,7 @@ function MovieCard({ movie }: { movie: TMDbMovie }) {
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
     : null;
 
+  // movie.id is already the TMDB numeric ID, so route directly.
   return (
     <Link
       href={`/watch/${movie.id}`}

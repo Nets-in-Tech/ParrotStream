@@ -1,38 +1,17 @@
 import React from "react";
 import Link from "next/link";
-import { getMovieStreamUrl } from "@/lib/services/media";
-import NativeHlsPlayer from "@/components/NativeHlsPlayer";
 
 interface WatchPageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default async function WatchPage({ params }: WatchPageProps) {
-  // 1. Resolve the route parameters asynchronously
-  const resolvedParams = await params;
-  const movieId = resolvedParams?.id;
+  const tmdbId = params?.id;
 
-  // 2. Invoke our centralized service layer directly
-  // NOTE: embedUrl now represents a direct .m3u8 stream URL (not an iframe embed).
-  const streamData = await getMovieStreamUrl(movieId);
+  const iframeSrc = tmdbId
+    ? `https://vidsrc.xyz/embed/movie/${encodeURIComponent(String(tmdbId))}`
+    : "";
 
-  // 3. Fallback screen boundary if data pipeline returns success: false
-  if (!streamData.success || !streamData.embedUrl) {
-    return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-neutral-950 text-white font-sans">
-        <h1 className="text-2xl font-bold tracking-tight text-red-600 mb-4">Playback Stream Unavailable</h1>
-        <p className="text-neutral-400 mb-6 text-sm">We ran into an issue initializing the media pipeline for this title.</p>
-        <Link
-          href="/"
-          className="px-5 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded font-medium text-sm transition-colors"
-        >
-          Return to Dashboard
-        </Link>
-      </div>
-    );
-  }
-
-  // 4. Successful execution state: Render layout view
   return (
     <div className="relative w-screen h-screen bg-black overflow-hidden select-none">
       {/* Cinematic Navigation Overlay */}
@@ -51,15 +30,32 @@ export default async function WatchPage({ params }: WatchPageProps) {
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
           </svg>
-          <span className="text-sm font-semibold uppercase tracking-wider">Exit Preview</span>
+          <span className="text-sm font-semibold uppercase tracking-wider">
+            Exit Preview
+          </span>
         </Link>
       </header>
 
-      {/* Native HLS Video Player */}
-      <div className="w-full h-full">
-        <NativeHlsPlayer streamUrl={streamData.embedUrl} />
-      </div>
+      {/* vidsrc.xyz Embed */}
+<div className="w-full h-full bg-black flex items-center justify-center">
+  {iframeSrc ? (
+    <iframe
+      key={tmdbId}
+      title="Watch"
+      src={iframeSrc}
+      className="w-full h-full border-0"
+      allowFullScreen
+      sandbox="allow-scripts allow-same-origin allow-forms"
+    />
+  ) : (
+    // Optional: Show a nice clean loading state while the ID resolves
+    <div className="text-white text-lg font-medium animate-pulse">
+      Loading video stream...
+    </div>
+  )}
+</div>
     </div>
   );
 }
+
 
