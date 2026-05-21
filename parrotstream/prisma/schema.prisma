@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core models for Netflix clone
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+
+  profiles  Profile[]
+}
+
+model Profile {
+  id         String   @id @default(cuid())
+  name       String
+  avatarUrl  String?
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  watchHistories WatchHistory[]
+}
+
+model Movie {
+  id            String   @id
+
+  title         String
+  description   String?
+  backdropPath  String?
+  posterPath    String?
+  videoUrl      String?
+  category      String?
+  releaseDate   DateTime?
+
+  watchHistories WatchHistory[]
+}
+
+model WatchHistory {
+  id                 String   @id @default(cuid())
+
+  profileId         String
+  profile           Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  movieId           String
+  movie             Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  timestampInSeconds Int
+  isCompleted       Boolean  @default(false)
+  updatedAt         DateTime @updatedAt
+}
+
