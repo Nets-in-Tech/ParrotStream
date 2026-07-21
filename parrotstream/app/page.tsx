@@ -1,7 +1,7 @@
-import React from "react";
 import Link from "next/link";
 import type { TMDbMovie } from "@/lib/tmdb";
 import { getMoviesByCategory, getTrendingMovies } from "@/lib/tmdb";
+import GenreBrowser from "@/components/GenreBrowser";
 
 function buildBackdropUrl(movie?: TMDbMovie | null) {
 
@@ -43,13 +43,8 @@ function MovieCard({ movie }: { movie: TMDbMovie }) {
 }
 
 
-function CatalogRow({
-  title,
-  movies,
-}: {
-  title: string;
-  movies: TMDbMovie[];
-}) {
+function CatalogRow({title, movies}: 
+  {title: string; movies: TMDbMovie[];}) {
   return (
     <section className="px-4 sm:px-6 md:px-10">
       <div className="mt-6 flex items-center gap-3">
@@ -77,7 +72,7 @@ export default async function Home() {
 
   // Free + simple mapping; TMDb genre resolution happens inside getMoviesByCategory.
   const action = await getMoviesByCategory("Action");
-  const scifi = await getMoviesByCategory("Sci-Fi");
+  const scifi = await getMoviesByCategory("Science Fiction");
 
   const heroMovie = trending.results[0];
   const backdrop = buildBackdropUrl(heroMovie);
@@ -130,14 +125,6 @@ export default async function Home() {
                 <span className="mr-2">▶</span>
                 Play
               </Link>
-
-
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded border border-white/15 bg-transparent px-6 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/5"
-              >
-                More Info
-              </button>
             </div>
 
             <div className="mt-6 flex flex-wrap gap-2 text-xs text-zinc-400">
@@ -148,6 +135,9 @@ export default async function Home() {
           </div>
         </div>
       </header>
+
+      {/* Genre Browser */}
+      <GenreBrowser />
 
       {/* Rows */}
       <CatalogRow title="Trending" movies={trending.results.slice(0, 20)} />

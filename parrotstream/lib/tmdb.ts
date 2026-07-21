@@ -5,6 +5,22 @@ export interface TMDbMovie {
   backdrop_path: string | null;
   poster_path: string | null;
   release_date: string | null;
+  genre_ids?: number[];
+}
+
+export interface TMDbGenre {
+  id: number;
+  name: string;
+}
+
+export interface TMDbMovieDetails {
+  id: number;
+  title: string;
+  overview: string;
+  backdrop_path: string | null;
+  poster_path: string | null;
+  release_date: string | null;
+  genres: TMDbGenre[];
 }
 
 export interface TMDbMoviesResponse {
@@ -55,11 +71,15 @@ export async function getTrendingMovies(options: TrendingMoviesOptions = {}): Pr
   return fetchJson<TMDbMoviesResponse>(url);
 }
 
-export async function getMoviesByCategory(category: string): Promise<TMDbMoviesResponse> {
+export async function getMoviesByCategory(
+  category: string,
+  options?: { page?: number }
+): Promise<TMDbMoviesResponse> {
   // Category is a genre name like "Action"/"Comedy"/"Sci-Fi".
   // To keep this free + simple, we map it to a genre_id using the `/genre/movie/list` endpoint.
 
   const normalized = category.trim().toLowerCase();
+  const page = options?.page ?? 1;
 
   const genreListUrl = `${TMDB_BASE_URL}/genre/movie/list`;
   const genreList = await fetchJson<{ genres: Array<{ id: number; name: string }> }>(genreListUrl);
@@ -69,7 +89,7 @@ export async function getMoviesByCategory(category: string): Promise<TMDbMoviesR
   if (!match) {
     // Return empty results if genre not found.
     return {
-      page: 1,
+      page,
       results: [],
       total_pages: 1,
       total_results: 0,
@@ -77,7 +97,16 @@ export async function getMoviesByCategory(category: string): Promise<TMDbMoviesR
   }
 
   // `/discover/movie?with_genres=<id>`
-  const url = `${TMDB_BASE_URL}/discover/movie?with_genres=${encodeURIComponent(String(match.id))}`;
+  const url = `${TMDB_BASE_URL}/discover/movie?with_genres=${encodeURIComponent(String(match.id))}&page=${encodeURIComponent(String(page))}`;
   return fetchJson<TMDbMoviesResponse>(url);
+}
+
+export async function getMovieDetails(movieId: number): Promise<TMDbMovieDetails | null> {
+  try {
+    const url = `${TMDB_BASE_URL}/movie/${encodeURIComponent(String(movieId))}`;
+    return await fetchJson<TMDbMovieDetails>(url);
+  } catch {
+    return null;
+  }
 }
 

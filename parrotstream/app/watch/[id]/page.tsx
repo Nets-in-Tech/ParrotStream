@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, use } from "react";
+import { useEffect, useMemo, useState, use } from "react";
 import Link from "next/link";
+import GenreRecommendations from "@/components/GenreRecommendations";
 
 type TMDBVideoType = {
   id: string | number;
@@ -15,7 +16,7 @@ type TMDBVideosResponse = {
 };
 
 interface WatchPageProps {
-  params: Promise<{
+  readonly params: Promise<{
     id: string;
   }>;
 }
@@ -63,8 +64,6 @@ export default function WatchPage({ params }: WatchPageProps) {
         const url = `https://api.themoviedb.org/3/movie/${encodeURIComponent(
           String(tmdbId)
         )}/videos?api_key=${encodeURIComponent(String(tmdbApiKey))}`;
-
-        console.log("Fetching TMDB ID:", tmdbId);
 
         const res = await fetch(url, { method: "GET" });
         if (!res.ok) {
@@ -132,56 +131,62 @@ export default function WatchPage({ params }: WatchPageProps) {
   }, [tmdbId, tmdbApiKey]);
 
   return (
-    <div className="relative w-screen h-screen bg-black overflow-hidden select-none">
-      {/* Cinematic Navigation Overlay */}
-      <header className="absolute top-0 left-0 w-full z-50 p-6 bg-gradient-to-b from-black/80 to-transparent">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-3 text-white/70 hover:text-white font-medium tracking-wide transition-colors"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2.5}
-            stroke="currentColor"
-            className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform"
+    <div className="relative min-h-screen bg-zinc-950 select-none">
+      {/* Cinematic Trailer Section */}
+      <div className="relative w-full h-screen overflow-hidden">
+        {/* Cinematic Navigation Overlay */}
+        <header className="absolute top-0 left-0 w-full z-50 p-6 bg-gradient-to-b from-black/80 to-transparent">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-3 text-white/70 hover:text-white font-medium tracking-wide transition-colors"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-            />
-          </svg>
-          <span className="text-sm font-semibold uppercase tracking-wider">
-            Exit Preview
-          </span>
-        </Link>
-      </header>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+              stroke="currentColor"
+              className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+              />
+            </svg>
+            <span className="text-sm font-semibold uppercase tracking-wider">
+              Exit Preview
+            </span>
+          </Link>
+        </header>
 
-      <div className="w-full h-full bg-black flex items-center justify-center">
-        {isLoading ? (
-          <div className="flex flex-col items-center gap-3">
-            <div className="animate-pulse h-3 w-3 rounded-full bg-red-500" />
-            <div className="text-white text-lg font-medium animate-pulse">
-              Sourcing Official Trailer...
+        <div className="w-full h-full bg-black flex items-center justify-center">
+          {isLoading ? (
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-pulse h-3 w-3 rounded-full bg-red-500" />
+              <div className="text-white text-lg font-medium animate-pulse">
+                Sourcing Official Trailer...
+              </div>
             </div>
-          </div>
-        ) : trailerMessage ? (
-          <div className="flex flex-col items-center gap-3">
-            <div className="text-white/60 text-lg">{trailerMessage}</div>
-          </div>
-        ) : (
-          <iframe
-            title="Watch"
-            src={youtubeEmbedSrc}
-            className="w-full h-full border-0"
-            allow="autoplay; encrypted-media"
-            sandbox="allow-scripts allow-same-origin allow-forms"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
-        )}
+          ) : trailerMessage ? (
+            <div className="flex flex-col items-center gap-3">
+              <div className="text-white/60 text-lg">{trailerMessage}</div>
+            </div>
+          ) : (
+            <iframe
+              title="Watch"
+              src={youtubeEmbedSrc}
+              className="w-full h-full border-0"
+              allow="autoplay; encrypted-media"
+              sandbox="allow-scripts allow-same-origin allow-forms"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          )}
+        </div>
       </div>
+
+      {/* Genre Recommendations */}
+      {tmdbId && <GenreRecommendations movieId={Number(tmdbId)} />}
     </div>
   );
 }
